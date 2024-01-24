@@ -9,61 +9,48 @@ import (
 	"strconv"
 )
 
-type IAuthorController interface {
-	GetAllAuthors(e echo.Context) error
-	GetAuthor(e echo.Context) error
-	CreateAuthor(e echo.Context) error
-	UpdateAuthor(e echo.Context) error
-	DeleteAuthor(e echo.Context) error
-	DeleteBookByAuthorID(e echo.Context) error
-}
-
+// IAuthorController is an interface for AuthorController.
 type AuthorController struct {
 	AuthorSvc domain.IAuthorService
-	BookSvc   domain.IBookService
 }
 
-func NewAuthorController(AuthorSvc domain.IAuthorService, BookSvc domain.IBookService) AuthorController {
+// NewAuthorController returns a new AuthorController.
+func NewAuthorController(AuthorSvc domain.IAuthorService) AuthorController {
 	return AuthorController{
 		AuthorSvc: AuthorSvc,
-		BookSvc:   BookSvc,
 	}
 }
 
 // CreateAuthor implements IAuthorController.
-func (controller *AuthorController) CreateAuthor(e echo.Context) error {
-	reqAuthor := &types.AuthorRequest{}
-	if err := e.Bind(reqAuthor); err != nil {
+func (authorService *AuthorController) CreateAuthor(e echo.Context) error {
+	authorRequest := &types.AuthorRequest{}
+	if err := e.Bind(authorRequest); err != nil {
 		return e.JSON(http.StatusBadRequest, "Invalid Data")
 	}
-	if err := reqAuthor.Validate(); err != nil {
+	if err := authorRequest.Validate(); err != nil {
 		return e.JSON(http.StatusBadRequest, err.Error())
 	}
-	Author := &models.AuthorDetail{
-		AuthorName:        reqAuthor.AuthorName,
-		AuthorAddress:     reqAuthor.AuthorAddress,
-		AuthorPhoneNumber: reqAuthor.AuthorPhoneNumber,
+	author := &models.AuthorDetail{
+		AuthorName:        authorRequest.AuthorName,
+		AuthorAddress:     authorRequest.AuthorAddress,
+		AuthorPhoneNumber: authorRequest.AuthorPhoneNumber,
 	}
-	if err := controller.AuthorSvc.CreateAuthor(Author); err != nil {
+	if err := authorService.AuthorSvc.CreateAuthor(author); err != nil {
 		return e.JSON(http.StatusInternalServerError, err.Error())
 	}
-	return e.JSON(http.StatusCreated, "AuthorDetail is created successfully")
+	return e.JSON(http.StatusCreated, "Author was created successfully")
 }
 
-// GetAuthors implements IAuthorController.
-func (controller *AuthorController) GetAllAuthors(e echo.Context) error {
-	tempAuthorID := e.QueryParam("authorID")
-	AuthorID, err := strconv.ParseInt(tempAuthorID, 0, 0)
-	if err != nil && tempAuthorID != "" {
-		return e.JSON(http.StatusBadRequest, "Enter a valid Author ID")
-	}
-	Author, err := controller.AuthorSvc.GetAuthor(uint(AuthorID))
+// GetAllAuthors implements IAuthorController.
+func (authorService *AuthorController) GetAllAuthors(e echo.Context) error {
+	authors, err := authorService.AuthorSvc.GetAllAuthors()
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, err.Error())
 	}
-	return e.JSON(http.StatusOK, Author)
+	return e.JSON(http.StatusOK, authors)
 }
 
+// GetAuthor implements IAuthorController.
 func (authorService *AuthorController) GetAuthor(e echo.Context) error {
 	tempAuthorID := e.Param("authorID")
 	authorID, err := strconv.ParseInt(tempAuthorID, 0, 0)
@@ -101,22 +88,18 @@ func (authorService *AuthorController) UpdateAuthor(e echo.Context) error {
 }
 
 // DeleteAuthor implements IAuthorController.
-func (controller *AuthorController) DeleteAuthor(e echo.Context) error {
+func (authorService *AuthorController) DeleteAuthor(e echo.Context) error {
 	tempAuthorID := e.Param("authorID")
-	AuthorID, err := strconv.ParseInt(tempAuthorID, 0, 0)
+	authorID, err := strconv.ParseInt(tempAuthorID, 0, 0)
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, "Invalid Data")
 	}
-	_, err = controller.AuthorSvc.GetAuthor(uint(AuthorID))
-	_, err = controller.AuthorSvc.GetAuthor(uint(AuthorID))
+	_, err = authorService.AuthorSvc.GetAuthor(uint(authorID))
 	if err != nil {
 		return e.JSON(http.StatusBadRequest, err.Error())
 	}
-	if err := controller.AuthorSvc.DeleteAuthor(uint(AuthorID)); err != nil {
+	if err := authorService.AuthorSvc.DeleteAuthor(uint(authorID)); err != nil {
 		return e.JSON(http.StatusInternalServerError, err.Error())
 	}
-	if err := controller.BookSvc.DeleteBookByAuthorID(uint(AuthorID)); err != nil {
-		return e.JSON(http.StatusInternalServerError, err.Error())
-	}
-	return e.JSON(http.StatusOK, "AuthorDetail is deleted successfully and All Books of the author deleted successfully")
+	return e.JSON(http.StatusOK, "Author was deleted successfully")
 }

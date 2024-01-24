@@ -31,7 +31,7 @@ func (repo *authorRepo) GetAllAuthors() []models.AuthorDetail {
 
 func (repo *authorRepo) GetAuthor(authorID uint) (models.AuthorDetail, error) {
 	var author models.AuthorDetail
-	if err := repo.db.Where("id = ?", authorID).First(&author).Error; err != nil {
+	if err := repo.db.Where("author_id = ?", authorID).First(&author).Error; err != nil {
 		return author, err
 	}
 	return author, nil

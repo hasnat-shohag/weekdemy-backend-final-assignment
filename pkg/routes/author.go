@@ -28,5 +28,6 @@ func (authorRoutes *authorRoutes) initAuthorRoutes(e *echo.Echo) {
 	author.GET("/authors", authorRoutes.authorController.GetAllAuthors)
 	author.GET("/authors/:authorID", authorRoutes.authorController.GetAuthor)
 	author.PUT("/authors/:authorID", authorRoutes.authorController.UpdateAuthor)
+	// author.GET("/authors/:authorID/books", authorRoutes.authorController.GetBooksByAuthorID)
 	author.DELETE("/authors/:authorID", authorRoutes.authorController.DeleteAuthor)
 }

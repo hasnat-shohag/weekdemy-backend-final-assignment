@@ -8,18 +8,20 @@ import (
 )
 
 type authorService struct {
-	repo domain.IAuthorRepo
+	authorRepo domain.IAuthorRepo
+	bookRepo   domain.IBookRepo
 }
 
-func AuthorServiceInstance(authorRepo domain.IAuthorRepo) domain.IAuthorService {
+func AuthorServiceInstance(authorRepo domain.IAuthorRepo, bookRepo domain.IBookRepo) domain.IAuthorService {
 	return &authorService{
-		repo: authorRepo,
+		authorRepo: authorRepo,
+		bookRepo:   bookRepo,
 	}
 }
 
 func (service *authorService) GetAllAuthors() ([]types.AuthorRequest, error) {
 	var allAuthors []types.AuthorRequest
-	author := service.repo.GetAllAuthors()
+	author := service.authorRepo.GetAllAuthors()
 	if len(author) == 0 {
 		return nil, errors.New("No author found")
 	}
@@ -35,7 +37,7 @@ func (service *authorService) GetAllAuthors() ([]types.AuthorRequest, error) {
 }
 
 func (service *authorService) GetAuthor(authorID uint) (types.AuthorRequest, error) {
-	authorDetail, err := service.repo.GetAuthor(authorID)
+	authorDetail, err := service.authorRepo.GetAuthor(authorID)
 	author := types.AuthorRequest{
 		AuthorID:          authorDetail.AuthorId,
 		AuthorName:        authorDetail.AuthorName,
@@ -43,21 +45,20 @@ func (service *authorService) GetAuthor(authorID uint) (types.AuthorRequest, err
 		AuthorPhoneNumber: authorDetail.AuthorPhoneNumber,
 	}
 	if err != nil {
-		return author, errors.New("No author found")
+		return author, errors.New("Author not found")
 	}
 	return author, nil
 }
 
 func (service *authorService) CreateAuthor(author *models.AuthorDetail) error {
-	if err := service.repo.CreateAuthor(author); err != nil {
-
+	if err := service.authorRepo.CreateAuthor(author); err != nil {
 		return errors.New("Author was not created")
 	}
 	return nil
 }
 
 func (service *authorService) UpdateAuthor(updatedAuthor *models.AuthorDetail) error {
-	existingAuthor, err := service.GetAuthor(uint(updatedAuthor.AuthorId))
+	existingAuthor, err := service.GetAuthor(updatedAuthor.AuthorId)
 	if err != nil {
 		return errors.New("No author found")
 	}
@@ -70,14 +71,17 @@ func (service *authorService) UpdateAuthor(updatedAuthor *models.AuthorDetail) e
 	if updatedAuthor.AuthorPhoneNumber == "" {
 		updatedAuthor.AuthorPhoneNumber = existingAuthor.AuthorPhoneNumber
 	}
-	if err := service.repo.UpdateAuthor(updatedAuthor); err != nil {
+	if err := service.authorRepo.UpdateAuthor(updatedAuthor); err != nil {
 		return errors.New("Author was not updated")
 	}
 	return nil
 }
 
 func (service *authorService) DeleteAuthor(authorID uint) error {
-	if err := service.repo.DeleteAuthor(authorID); err != nil {
+	if err := service.authorRepo.DeleteAuthor(authorID); err != nil {
+		return errors.New("Author was not deleted")
+	}
+	if err := service.bookRepo.DeleteBooksByAuthorID(authorID); err != nil {
 		return errors.New("Author was not deleted")
 	}
 	return nil

@@ -26,11 +26,11 @@ func Serve(e *echo.Echo) {
 
 	//service initialization
 	bookService := services.BookServiceInstance(bookRepo)
-	authorService := services.AuthorServiceInstance(authorRepo)
+	authorService := services.AuthorServiceInstance(authorRepo, bookRepo)
 
 	//controller initialization
 	bookCtr := controllers.NewBookController(bookService)
-	authorCtr := controllers.NewAuthorController(authorService, bookService)
+	authorCtr := controllers.NewAuthorController(authorService)
 
 	//route initialization
 	b := routes.BookRoutes(e, bookCtr)
