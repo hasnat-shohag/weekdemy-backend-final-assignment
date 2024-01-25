@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/labstack/echo/v4"
 	"noob-server/pkg/controllers"
+	"noob-server/pkg/middlewares"
 )
 
 type authorRoutes struct {
@@ -24,10 +25,12 @@ func (authorRoutes *authorRoutes) InitAuthorRoutes() {
 
 func (authorRoutes *authorRoutes) initAuthorRoutes(e *echo.Echo) {
 	author := e.Group("/bookstore")
-	author.POST("/authors", authorRoutes.authorController.CreateAuthor)
 	author.GET("/authors", authorRoutes.authorController.GetAllAuthors)
 	author.GET("/authors/:authorID", authorRoutes.authorController.GetAuthor)
+
+	author.Use(middlewares.ValidateToken)
+
+	author.POST("/authors", authorRoutes.authorController.CreateAuthor)
 	author.PUT("/authors/:authorID", authorRoutes.authorController.UpdateAuthor)
-	// author.GET("/authors/:authorID/books", authorRoutes.authorController.GetBooksByAuthorID)
 	author.DELETE("/authors/:authorID", authorRoutes.authorController.DeleteAuthor)
 }

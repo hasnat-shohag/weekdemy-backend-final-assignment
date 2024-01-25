@@ -6,11 +6,13 @@ import (
 )
 
 type Config struct {
-	DbUser string `mapstructure:"DBUSER"`
-	DbPass string `mapstructure:"DBPASS"`
-	DbIp   string `mapstructure:"DBIP"`
-	DbName string `mapstructure:"DBNAME"`
-	Port   string `mapstructure:"PORT"`
+	DbUser           string `mapstructure:"DBUSER"`
+	DbPass           string `mapstructure:"DBPASS"`
+	DbIp             string `mapstructure:"DBIP"`
+	DbName           string `mapstructure:"DBNAME"`
+	Port             string `mapstructure:"PORT"`
+	JwtSecret        string `mapstructure:"JWT_SECRET"`
+	JwtExpireMinutes int    `mapstructure:"JWT_EXPIRE_MINUTES"`
 }
 
 var LocalConfig *Config

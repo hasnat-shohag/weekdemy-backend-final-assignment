@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"noob-server/pkg/controllers"
+	"noob-server/pkg/middlewares"
 )
 
 type bookRoutes struct {
@@ -31,9 +32,12 @@ func (bc *bookRoutes) initBookRoutes(e *echo.Echo) {
 	book.GET("/ping", Pong)
 
 	//initializing http methods - routing endpoints and their handlers
-	book.POST("/books", bc.bookCtr.CreateBook)
 	book.GET("/books", bc.bookCtr.GetAllBooks)
 	book.GET("/books/:bookID", bc.bookCtr.GetBook)
+
+	book.Use(middlewares.ValidateToken)
+
+	book.POST("/books", bc.bookCtr.CreateBook)
 	book.PUT("/books/:bookID", bc.bookCtr.UpdateBook)
 	book.DELETE("/books/:bookID", bc.bookCtr.DeleteBook)
 }
